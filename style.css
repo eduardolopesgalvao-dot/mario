@@ -1,0 +1,49 @@
+/* Animação do cano se movendo da direita para a esquerda */
+@keyframes pipe-animation {
+    from {
+      right: -80px; /* Começa fora da tela (direita) */
+    }
+    to {
+      right: 100%; /* Termina fora da tela (esquerda) */
+    }
+  }
+  
+  .pipe {
+    width: 80px;
+    position: absolute;
+    bottom: 0;
+    animation: pipe-animation 2s infinite linear;
+    /* 2s = duração / infinite = repete sempre / linear = velocidade constante */
+  }
+  
+  /* Animação do pulo do Mario */
+  @keyframes jump {
+    0% { bottom: 0; } /* Posição inicial */
+    40%, 50%, 60% { bottom: 180px; } /* Apice do pulo (mantém no topo) */
+    100% { bottom: 0; } /* Retorna no chão */
+  }
+  
+  .jump {
+    animation: jump 500ms ease-out;
+    /* 500ms = meio segundo / ease-out = desaceleração no final */
+  }
+  /* Adicione ao CSS */
+.night-mode {
+    background: linear-gradient(rgb(10, 10, 50), rgb(30, 30, 60)) !important;
+  }
+  
+  .night-mode .score {
+    color: yellow;
+  }
+  .coin {
+    width: 30px;
+    position: absolute;
+    bottom: 150px;
+    animation: coin-animation 3s infinite linear;
+  }
+  
+  @keyframes coin-animation {
+    from { right: -30px; }
+    to { right: 100%; }
+  }
+  

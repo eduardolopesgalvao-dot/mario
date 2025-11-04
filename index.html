@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mario Jump Game - Versão Grande</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      overflow: hidden;
+      background: linear-gradient(#87CEEB, #E0F7FF);
+      height: 100vh;
+      font-family: 'Arial', sans-serif;
+    }
+
+    .bord {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      border-bottom: 25px solid #654321; /* chão mais grosso */
+    }
+
+    /* NUVENS - MAIORES */
+    .clouds {
+      position: absolute;
+      top: 60px;
+      width: 1000px; /* era 600px → +67% */
+      animation: clouds 25s infinite linear;
+    }
+
+    @keyframes clouds {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(100%); }
+    }
+
+    /* CANO - MAIOR */
+    .pipe {
+      position: absolute;
+      bottom: 0;
+      width: 140px; /* era 80px → +75% */
+      height: 140px;
+      animation: pipe-animation 1.8s infinite linear;
+    }
+
+    @keyframes pipe-animation {
+      from { right: -140px; }
+      to { right: 100%; }
+    }
+
+    /* MARIO - MAIOR */
+    .mario {
+      width: 200px; /* era 120px → +67% */
+      height: 200px;
+      position: absolute;
+      bottom: 0;
+      left: 80px; /* afastado da borda */
+    }
+
+    .jump {
+      animation: jump 0.7s ease-out;
+    }
+
+    @keyframes jump {
+      0% { bottom: 0; }
+      40% { bottom: 300px; }   /* pulo mais alto */
+      50% { bottom: 330px; }
+      70% { bottom: 300px; }
+      100% { bottom: 0; }
+    }
+
+    /* MOEDA - MAIOR */
+    .coin {
+      position: absolute;
+      width: 70px; /* era 40px → +75% */
+      height: 70px;
+      top: 180px; /* mais alta */
+      right: -70px;
+      animation: coin-move 1.8s infinite linear;
+    }
+
+    @keyframes coin-move {
+      from { right: -70px; }
+      to { right: 100%; }
+    }
+
+    /* PONTUAÇÃO */
+    .score {
+      position: absolute;
+      top: 30px;
+      right: 30px;
+      font-size: 36px; /* maior */
+      font-weight: bold;
+      color: white;
+      text-shadow: 3px 3px 6px rgba(0,0,0,0.6);
+    }
+
+    /* GAME OVER */
+    .game-over {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 80px;
+      color: #ff4444;
+      font-weight: bold;
+      text-shadow: 4px 4px white;
+      display: none;
+      z-index: 99;
+    }
+
+    #restartBtn {
+      position: absolute;
+      top: 55%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 20px 40px;
+      font-size: 28px;
+      background: #ff4444;
+      color: white;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      display: none;
+      z-index: 100;
+      box-shadow: 0 8px 0 #cc0000;
+    }
+
+    #restartBtn:active {
+      transform: translate(-50%, -46%);
+      box-shadow: 0 4px 0 #cc0000;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bord">
+    <img src="./Images/clouds.png" class="clouds">
+    <img src="./Images/mario.gif" class="mario" id="mario">
+    <img src="./Images/pipe.png" class="pipe" id="pipe">
+    <img src="./Images/coin.png" class="coin" id="coin">
+
+    <div class="score">Pontuação: <span id="score">0</span></div>
+    <div class="game-over" id="gameOver">Game Over!</div>
+    <button id="restartBtn">Reiniciar</button>
+  </div>
+
+  <script>
+    const mario = document.getElementById('mario');
+    const pipe = document.getElementById('pipe');
+    const coin = document.getElementById('coin');
+    const scoreDisplay = document.getElementById('score');
+    const restartBtn = document.getElementById('restartBtn');
+    const gameOverText = document.getElementById('gameOver');
+
+    let score = 0;
+    let isJumping = false;
+    let gameActive = true;
+
+    // Pulo com espaço
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && !isJumping && gameActive) {
+        jump();
+      }
+    });
+
+    // Pulo com toque (mobile)
+    document.addEventListener('touchstart', (e) => {
+      if (!isJumping && gameActive) {
+        e.preventDefault();
+        jump();
+      }
+    });
+
+    function jump() {
+      if (isJumping) return;
+      isJumping = true;
+      mario.classList.add('jump');
+
+      setTimeout(() => {
+        mario.classList.remove('jump');
+        isJumping = false;
+      }, 700);
+    }
+
+    // Loop principal
+    const loop = setInterval(() => {
+      if (!gameActive) return;
+
+      const pipeLeft = pipe.offsetLeft;
+      const marioBottom = +window.getComputedStyle(mario).bottom.replace('px', '');
+      const coinLeft = coin.offsetLeft;
+
+      // Colisão com cano (ajustado para tamanho maior)
+      if (pipeLeft <= 230 && pipeLeft > 60 && marioBottom <= 130) {
+        endGame();
+      }
+
+      // Coletar moeda
+      if (coinLeft <= 150 && coinLeft > 80 && marioBottom > 200) {
+        if (coin.style.opacity !== '0') {
+          score += 10;
+          scoreDisplay.textContent = score;
+          coin.style.opacity = '0';
+          setTimeout(() => {
+            coin.style.opacity = '1';
+            coin.style.animation = 'none';
+            coin.style.right = '-70px';
+            setTimeout(() => {
+              coin.style.animation = 'coin-move 1.8s infinite linear';
+            }, 10);
+          }, 800);
+        }
+      }
+
+      // Reset do cano
+      if (pipeLeft <= -140) {
+        pipe.style.animation = 'none';
+        pipe.style.right = '-140px';
+        setTimeout(() => {
+          pipe.style.animation = 'pipe-animation 1.8s infinite linear';
+        }, 10);
+      }
+
+    }, 10);
+
+    function endGame() {
+      gameActive = false;
+      pipe.style.animation = 'none';
+      coin.style.animation = 'none';
+      mario.src = './Images/mario-dead.png'; // opcional: imagem de game over
+      gameOverText.style.display = 'block';
+      restartBtn.style.display = 'block';
+    }
+
+    restartBtn.addEventListener('click', () => {
+      location.reload();
+    });
+  </script>
+</body>
+</html>
